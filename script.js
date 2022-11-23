@@ -11,11 +11,15 @@ let numeros = c('.d-1-3');
 // variaveis de controle de ambiente
 let etapaAtual = 0;
 let numero = '';
+let votoBranco = false;
+let votos = [];
 
 function comecarEtapa() {
     let etapa = etapas[etapaAtual];
 
     let numeroHtml = '';
+    numero = '';
+    votoBranco = false;
 
     for(let i = 0; i<etapa.numeros; i++) {
         if(i === 0) {
@@ -33,7 +37,36 @@ function comecarEtapa() {
     numeros.innerHTML = numeroHtml;
 }
 function atualizaInterface() {
-    alert('voto verificado');
+   let etapa = etapas[etapaAtual];
+
+   let candidato = etapa.candidatos.filter((item)=>{
+    if(item.numero === numero) {
+        return true;
+    } else {
+        return false;
+    }
+   })
+   if(candidato.length > 0) {
+    candidato = candidato[0];
+    seuVotoPara.style.display = 'block';
+    aviso.style.display = 'block';
+    descricao.innerHTML = `Nome ${candidato.nome}<br>Partido ${candidato.partido}`;
+
+    let fotosHtml = '';
+    for(let i in candidato.fotos) {
+        if(candidato.fotos[i].small) {
+            fotosHtml += `<div class="d-1-imagem small"><img src="images/${candidato.fotos[i].url}" alt="">${candidato.fotos[i].legenda}</div>`;
+        } else {
+            fotosHtml += `<div class="d-1-imagem"><img src="images/${candidato.fotos[i].url}" alt="">${candidato.fotos[i].legenda}</div>`;
+        }
+    }
+    lateral.innerHTML = fotosHtml;
+   } else {
+    seuVotoPara.style.display = 'block';
+    aviso.style.display = 'block';
+    descricao.innerHTML = '<div class="aviso-grande pisca">VOTO NULLO</div>';
+   }
+   
 }
 
 
@@ -52,13 +85,46 @@ function clicou(n) {
     }
 }
 function branco() {
-    alert('clicou no branco');
+        numero = '';
+        votoBranco = true;
+
+        seuVotoPara.style.display = 'block';
+        aviso.style.display = 'block';
+        numeros.innerHTML = '';
+        descricao.innerHTML = '<div class="aviso-grande pisca">VOTO EM BRANCO</div>';
+        lateral.innerHTML = '';
 }
 function corrige() {
-    alert('clicou no corrige');
+    comecarEtapa();
 }
 function confirma() {
-    alert('clicou no confirma');
+    let etapa = etapas[etapaAtual];
+
+    let voto = false;
+    if(votoBranco) {
+        votos.push({
+            etapa: etapas[etapaAtual].titulo,
+            voto: 'branco'
+        });
+        voto = true;
+    } else if(numeros.length === etapa.numero) {
+        console.log(`voto para ${numero}`);
+        voto = true;
+        votos.push({
+            etapa: etapas[etapaAtual].titulo,
+            voto: numero
+        });
+    }
+
+    if(voto) {
+        etapaAtual++;
+        if(etapas[etapaAtual] !== undefined) {
+            comecarEtapa();
+        } else {
+            document.querySelector('.tela').innerHTML = '<div class="aviso-gigante">FIM</div>'
+            console.log(votos);
+        }
+    }
 }
 
 comecarEtapa();
